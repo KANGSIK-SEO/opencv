@@ -1,0 +1,423 @@
+{
+  "app_summary": {
+    "total_frames": 286,
+    "avg_fps": 11.02,
+    "total_unique_ids": 13,
+    "target_detected_frames": 286,
+    "intrusion_frames": 224
+  },
+  "tracking_evaluation": {
+    "summary_table": [
+      {
+        "condition": "단일 객체 이동",
+        "trials": 10,
+        "id_switch": 0,
+        "failure": 2,
+        "failure_rate_pct": 20.0,
+        "note": "단일 손 이동 시 궤적 안정적 유지 (퇴장 경계부 면적 축소 1건 외 90% 성공)"
+      },
+      {
+        "condition": "두 객체 겹침",
+        "trials": 10,
+        "id_switch": 8,
+        "failure": 4,
+        "failure_rate_pct": 120.0,
+        "note": "50% 이상 가림/병합 구간(F115-125, F205, F215-225) 비고 기록; 교차 후 ID Switch 빈번"
+      },
+      {
+        "condition": "객체 일시 정지",
+        "trials": 5,
+        "id_switch": 0,
+        "failure": 4,
+        "failure_rate_pct": 80.0,
+        "note": "MOG2 학습률(>=0.01)에서 10프레임 이상 정지 시 배경 모델에 흡수되어 미검출 발생"
+      },
+      {
+        "condition": "조명 변화",
+        "trials": 5,
+        "id_switch": 1,
+        "failure": 4,
+        "failure_rate_pct": 100.0,
+        "note": "급격한 조도 변화 및 은색 패드 반사광/그림자로 인해 전경 마스크 붕괴(False Positive)"
+      }
+    ],
+    "protocol_logs": [
+      {
+        "video": "IMG_0591.MOV#S01",
+        "condition": "단일 객체 이동",
+        "frame_range": "F048-F074",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "우측 손 단독 진입 구간 (안정적 추적 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S02",
+        "condition": "단일 객체 이동",
+        "frame_range": "F115-F145",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "중앙 상단 손 단독 수평 이동 구간 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S03",
+        "condition": "단일 객체 이동",
+        "frame_range": "F146-F172",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "은색 패드 상단 단독 호버링 구간 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S04",
+        "condition": "단일 객체 이동",
+        "frame_range": "F173-F198",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "단독 손 좌측 이동 구간 (일시적 면적 축소 외 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S05",
+        "condition": "단일 객체 이동",
+        "frame_range": "F245-F275",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "손 상단 퇴장 구간 (퇴장 직전 프레임 미검출 1회)"
+      },
+      {
+        "video": "IMG_0591.MOV#S06(ROI-L)",
+        "condition": "단일 객체 이동",
+        "frame_range": "F075-F114",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "좌측 손 단독 ROI 추적 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S07(ROI-R)",
+        "condition": "단일 객체 이동",
+        "frame_range": "F075-F114",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "우측 손 단독 ROI 추적 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S08(ROI-L)",
+        "condition": "단일 객체 이동",
+        "frame_range": "F198-F244",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "후반부 좌측 손 단독 ROI 추적 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S09(ROI-R)",
+        "condition": "단일 객체 이동",
+        "frame_range": "F198-F244",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "후반부 우측 손 단독 ROI 추적 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#S10(Rev)",
+        "condition": "단일 객체 이동",
+        "frame_range": "F145-F115",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "단독 손 역방향 이동 시퀀스 (ID 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#O01",
+        "condition": "두 객체 겹침",
+        "frame_range": "F072-F125",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "양손 진입 후 중앙 접근 시 윤곽선 병합으로 ID:1/ID:2 전환 (50% 이상 병합 구간 비고 기록)"
+      },
+      {
+        "video": "IMG_0591.MOV#O02",
+        "condition": "두 객체 겹침",
+        "frame_range": "F105-F155",
+        "id_switch": 1,
+        "failure": 0,
+        "memo": "좌/우 손 교차 후 우측 손이 좌측 손 위치 점유 → ID Switch 발생 (5프레임 이상 유지)"
+      },
+      {
+        "video": "IMG_0591.MOV#O03",
+        "condition": "두 객체 겹침",
+        "frame_range": "F195-F220",
+        "id_switch": 1,
+        "failure": 0,
+        "memo": "F200 양손 분리 → F205 단일 윤곽선 병합 → F210 재분리 시 중심점 거리 역전으로 ID Switch"
+      },
+      {
+        "video": "IMG_0591.MOV#O04",
+        "condition": "두 객체 겹침",
+        "frame_range": "F210-F240",
+        "id_switch": 1,
+        "failure": 1,
+        "memo": "F215-F225 양손 완전 겹침(11프레임 단일 박스 병합) 후 F230 재분리 시 신규 ID 부여 및 Switch"
+      },
+      {
+        "video": "IMG_0591.MOV#O05",
+        "condition": "두 객체 겹침",
+        "frame_range": "F225-F260",
+        "id_switch": 1,
+        "failure": 0,
+        "memo": "F230-F240 두 손 근접 이동 후 F245 재병합 과정에서 좌/우 ID 교차"
+      },
+      {
+        "video": "IMG_0591.MOV#O06(Flip)",
+        "condition": "두 객체 겹침",
+        "frame_range": "F072-F125",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "좌우 반전 시퀀스: 병합 구간에서 한쪽 손 ID 소실 후 재부여"
+      },
+      {
+        "video": "IMG_0591.MOV#O07(Flip)",
+        "condition": "두 객체 겹침",
+        "frame_range": "F195-F225",
+        "id_switch": 1,
+        "failure": 0,
+        "memo": "좌우 반전 시퀀스: 중앙 교차 시 Greedy 최근접 매칭이 반대쪽 손을 선택하여 ID Switch"
+      },
+      {
+        "video": "IMG_0591.MOV#O08(Fast)",
+        "condition": "두 객체 겹침",
+        "frame_range": "F195-F250(2x)",
+        "id_switch": 1,
+        "failure": 1,
+        "memo": "2배속 프레임 샘플링: 프레임 간 이동 변위 증가로 겹침 직후 ID Switch 및 미검출 동시 발생"
+      },
+      {
+        "video": "IMG_0591.MOV#O09(Tight)",
+        "condition": "두 객체 겹침",
+        "frame_range": "F075-F120",
+        "id_switch": 1,
+        "failure": 0,
+        "memo": "모폴로지 커널 축소(25x25): 두 손 교차 순간 중심점 급변으로 ID Switch 발생"
+      },
+      {
+        "video": "IMG_0591.MOV#O10(Full)",
+        "condition": "두 객체 겹침",
+        "frame_range": "F050-F260",
+        "id_switch": 1,
+        "failure": 0,
+        "memo": "전체 영상 연속 추적: 전반부 ID(1,2)와 후반부 재등장/교차 ID 간 Switch 발생"
+      },
+      {
+        "video": "IMG_0591.MOV#P01(lr=0.05)",
+        "condition": "객체 일시 정지",
+        "frame_range": "F140-F185",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "높은 학습률(0.05)에서 F160-F182(23프레임) 동안 정지한 손이 배경으로 흡수되어 추적 실패"
+      },
+      {
+        "video": "IMG_0591.MOV#P02(lr=0.02)",
+        "condition": "객체 일시 정지",
+        "frame_range": "F145-F188",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "중간 학습률(0.02)에서 F163-F180(18프레임) 미검출로 기존 ID 삭제 후 재등장 시 새 ID 부여"
+      },
+      {
+        "video": "IMG_0591.MOV#P03(lr=0.01)",
+        "condition": "객체 일시 정지",
+        "frame_range": "F150-F185",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "학습률(0.01)에서 F165-F178(14프레임) 동안 윤곽선 면적이 임계값 이하로 감소하여 추적 실패"
+      },
+      {
+        "video": "IMG_0591.MOV#P04(Hold-15f)",
+        "condition": "객체 일시 정지",
+        "frame_range": "F100-F140",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "F110 프레임 15프레임 정지 유지 시 MOG2 전경 소실로 12프레임 미검출 발생"
+      },
+      {
+        "video": "IMG_0591.MOV#P05(lr=0.001)",
+        "condition": "객체 일시 정지",
+        "frame_range": "F140-F185",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "낮은 학습률(0.001) 적용 시 정지 구간에서도 전경 마스크가 유지되어 ID 연속 추적 성공"
+      },
+      {
+        "video": "IMG_0591.MOV#L01(Shadow)",
+        "condition": "조명 변화",
+        "frame_range": "F075-F115",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "양손 진입 시 흰 책상과 은색 패드에 드리워진 그림자가 객체 윤곽선과 결합되어 중심점 왜곡"
+      },
+      {
+        "video": "IMG_0591.MOV#L02(Reflect)",
+        "condition": "조명 변화",
+        "frame_range": "F245-F280",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "손 퇴장 직후 은색 충전 패드 표면 반사광 변화(F255-F270)가 가짜 전경 객체로 오검출"
+      },
+      {
+        "video": "IMG_0591.MOV#L03(Bright+40)",
+        "condition": "조명 변화",
+        "frame_range": "F060-F120",
+        "id_switch": 1,
+        "failure": 1,
+        "memo": "F085에서 전역 밝기 +40 급변 시 화면 전체가 전경(거대 단일 박스)으로 검출되어 추적 실패 및 ID 리셋"
+      },
+      {
+        "video": "IMG_0591.MOV#L04(Dark-40)",
+        "condition": "조명 변화",
+        "frame_range": "F190-F245",
+        "id_switch": 0,
+        "failure": 1,
+        "memo": "F210에서 전역 밝기 -40 급변 시 배경 모델 전체가 붕괴되어 14프레임 동안 정상 객체 분리 실패"
+      },
+      {
+        "video": "IMG_0591.MOV#L05(Gradual)",
+        "condition": "조명 변화",
+        "frame_range": "F050-F150",
+        "id_switch": 0,
+        "failure": 0,
+        "memo": "완만한 밝기 변화(프레임당 +0.2)에서는 MOG2 가우시안 분산 업데이트가 적응하여 추적 유지"
+      }
+    ]
+  },
+  "feature_matching": {
+    "ORB": [
+      {
+        "condition": "정면",
+        "ref_kp": 933,
+        "extracted_kp": 933,
+        "ratio_passed": 933,
+        "matched_kp": 933,
+        "match_rate": 100.0
+      },
+      {
+        "condition": "30도 회전",
+        "ref_kp": 933,
+        "extracted_kp": 986,
+        "ratio_passed": 376,
+        "matched_kp": 368,
+        "match_rate": 37.3
+      },
+      {
+        "condition": "60도 회전",
+        "ref_kp": 933,
+        "extracted_kp": 1000,
+        "ratio_passed": 250,
+        "matched_kp": 234,
+        "match_rate": 23.4
+      },
+      {
+        "condition": "30% 가림",
+        "ref_kp": 933,
+        "extracted_kp": 860,
+        "ratio_passed": 640,
+        "matched_kp": 638,
+        "match_rate": 74.2
+      },
+      {
+        "condition": "50% 가림",
+        "ref_kp": 933,
+        "extracted_kp": 789,
+        "ratio_passed": 560,
+        "matched_kp": 548,
+        "match_rate": 69.5
+      }
+    ],
+    "SIFT": [
+      {
+        "condition": "정면",
+        "ref_kp": 514,
+        "extracted_kp": 514,
+        "ratio_passed": 514,
+        "matched_kp": 514,
+        "match_rate": 100.0
+      },
+      {
+        "condition": "30도 회전",
+        "ref_kp": 514,
+        "extracted_kp": 340,
+        "ratio_passed": 231,
+        "matched_kp": 223,
+        "match_rate": 65.6
+      },
+      {
+        "condition": "60도 회전",
+        "ref_kp": 514,
+        "extracted_kp": 256,
+        "ratio_passed": 189,
+        "matched_kp": 171,
+        "match_rate": 66.8
+      },
+      {
+        "condition": "30% 가림",
+        "ref_kp": 514,
+        "extracted_kp": 408,
+        "ratio_passed": 395,
+        "matched_kp": 389,
+        "match_rate": 95.3
+      },
+      {
+        "condition": "50% 가림",
+        "ref_kp": 514,
+        "extracted_kp": 388,
+        "ratio_passed": 368,
+        "matched_kp": 360,
+        "match_rate": 92.8
+      }
+    ]
+  },
+  "learning_rates": {
+    "0.001": {
+      "learning_rate": 0.001,
+      "mean_fg_ratio_pct": 17.05,
+      "pause_missed_frames_145_185": 0,
+      "ghost_frames_255_285": 25
+    },
+    "0.01": {
+      "learning_rate": 0.01,
+      "mean_fg_ratio_pct": 4.04,
+      "pause_missed_frames_145_185": 24,
+      "ghost_frames_255_285": 7
+    },
+    "0.05": {
+      "learning_rate": 0.05,
+      "mean_fg_ratio_pct": 0.47,
+      "pause_missed_frames_145_185": 41,
+      "ghost_frames_255_285": 2
+    }
+  },
+  "bonus_comparison": [
+    {
+      "method": "Greedy Distance (Baseline)",
+      "id_switches_in_10_overlaps": 7,
+      "total_assigned_ids_on_video": 9,
+      "track_retention_rate_pct": 68.4,
+      "description": "가장 가까운 순서대로 1:1 할당하여 교차 시 먼저 매칭된 객체가 반대편 ID를 선점함"
+    },
+    {
+      "method": "NumPy Hungarian (Bonus 1)",
+      "id_switches_in_10_overlaps": 5,
+      "total_assigned_ids_on_video": 7,
+      "track_retention_rate_pct": 76.8,
+      "description": "전체 거리 합을 최소화하는 전역 최적 할당으로 비대칭 근접 상황에서 ID 선점 오류 완화"
+    },
+    {
+      "method": "IoU Matching (Bonus 3)",
+      "id_switches_in_10_overlaps": 5,
+      "total_assigned_ids_on_video": 8,
+      "track_retention_rate_pct": 74.2,
+      "description": "박스 면적 중첩도를 반영하여 크기 일관성을 유지하나 빠른 이동 시 IoU가 0이 되는 한계 존재"
+    },
+    {
+      "method": "Hungarian + Kalman Filter (Bonus 1+4)",
+      "id_switches_in_10_overlaps": 3,
+      "total_assigned_ids_on_video": 5,
+      "track_retention_rate_pct": 86.5,
+      "description": "등속 운동 모델([x,y,vx,vy])로 교차 직후 위치를 예측하여 짧은 가림/교차 시 ID Switch 대폭 감소"
+    }
+  ]
+}
