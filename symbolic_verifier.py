@@ -247,21 +247,25 @@ class SymbolicMathAndTrackerProver:  # "객체 추적 알고리즘의 수학적 
         }
 
 
+BASE_DIR = "/content" if os.path.exists("/content/README.md") else os.path.dirname(os.path.abspath(__file__))
+
+
 class SymbolicReadmeCodeConsistencyVerifier:  # "소스 코드(AST)와 README.md/REPORT.md 문서의 기호적 일치성(클래스, 메소드, CLI 인자, 정량 수치)을 검증하는 클래스"
     """소스 코드의 AST 심볼 테이블과 README.md / REPORT.md 문서 간의 일치성을 기호 논리로 검증하는 클래스"""
 
     def __init__(
         self,
         code_files: List[str],
-        readme_path: str = "/content/README.md",
-        report_path: str = "/content/REPORT.md",
-        eval_json_path: str = "/content/evaluation_results.json",
+        readme_path: str = os.path.join(BASE_DIR, "README.md"),
+        report_path: str = os.path.join(BASE_DIR, "REPORT.md"),
+        eval_json_path: str = os.path.join(BASE_DIR, "evaluation_results.json"),
     ):  # "검증 대상 코드 파일 리스트와 README.md, REPORT.md, 평가 JSON 파일 경로를 초기화하는 생성자 메소드"
         """코드 파일 경로들과 문서 경로를 초기화하는 생성자 메소드"""
         self.code_files = code_files
         self.readme_path = readme_path
         self.report_path = report_path
         self.eval_json_path = eval_json_path
+        self.base_dir = os.path.dirname(os.path.abspath(readme_path))
 
     def verify_consistency(self) -> Dict[str, Any]:  # "코드에서 추출한 클래스·메소드·CLI 옵션·정량 수치 기호가 README.md 및 REPORT.md에 모두 정확히 기술되어 있는지 검증하는 메소드"
         """코드 AST 심볼(클래스, 함수/메소드, CLI 인자) 및 정량 지표가 README.md에 정확히 반영되어 있는지 검증하는 메소드"""
@@ -325,7 +329,9 @@ class SymbolicReadmeCodeConsistencyVerifier:  # "소스 코드(AST)와 README.md
             "fig4_bonus_comparison.png",
         ]
         missing_files = [
-            fname for fname in expected_files if not os.path.exists(os.path.join("/content", fname))
+            fname
+            for fname in expected_files
+            if not os.path.exists(os.path.join(self.base_dir, fname))
         ]
 
         # 3. evaluation_results.json의 정량 수치와 README.md / REPORT.md 표 수치 일치 여부 검증
@@ -361,10 +367,10 @@ if __name__ == "__main__":
     from tracker import Tracker, compute_iou, hungarian_algorithm_numpy
 
     target_py_files = [
-        "/content/symbolic_verifier.py",
-        "/content/tracker.py",
-        "/content/main.py",
-        "/content/evaluate.py",
+        os.path.join(BASE_DIR, "symbolic_verifier.py"),
+        os.path.join(BASE_DIR, "tracker.py"),
+        os.path.join(BASE_DIR, "main.py"),
+        os.path.join(BASE_DIR, "evaluate.py"),
     ]
     ast_verifier = SymbolicASTVerifier(target_py_files)
     ast_reports = ast_verifier.verify_all()

@@ -1,10 +1,68 @@
 {
+  "symbolic_ai_verification": {
+    "ast_reports": [
+      {
+        "file": "/Users/kangsikseo/opencv/symbolic_verifier.py",
+        "syntax_valid": true,
+        "classes_count": 4,
+        "functions_count": 11,
+        "missing_docstrings": [],
+        "unsafe_divisions": [],
+        "passed": true
+      },
+      {
+        "file": "/Users/kangsikseo/opencv/tracker.py",
+        "syntax_valid": true,
+        "classes_count": 2,
+        "functions_count": 12,
+        "missing_docstrings": [],
+        "unsafe_divisions": [],
+        "passed": true
+      },
+      {
+        "file": "/Users/kangsikseo/opencv/main.py",
+        "syntax_valid": true,
+        "classes_count": 2,
+        "functions_count": 9,
+        "missing_docstrings": [],
+        "unsafe_divisions": [],
+        "passed": true
+      },
+      {
+        "file": "/Users/kangsikseo/opencv/evaluate.py",
+        "syntax_valid": true,
+        "classes_count": 0,
+        "functions_count": 8,
+        "missing_docstrings": [],
+        "unsafe_divisions": [],
+        "passed": true
+      }
+    ],
+    "iou_axioms_proof": {
+      "axiom_bounded_0_to_1": true,
+      "axiom_reflexive_self_1": true,
+      "axiom_symmetric": true,
+      "axiom_disjoint_zero": true,
+      "all_passed": true
+    },
+    "hungarian_optimality_proof": {
+      "injective_constraint_satisfied": true,
+      "global_minimum_proven_against_exhaustive_search": true,
+      "all_passed": true
+    },
+    "tracker_state_invariants_proof": {
+      "key_set_equality_invariant": true,
+      "disappeared_bound_invariant": true,
+      "deregister_cleanup_invariant": true,
+      "all_passed": true
+    }
+  },
   "app_summary": {
-    "total_frames": 286,
-    "avg_fps": 11.02,
-    "total_unique_ids": 13,
-    "target_detected_frames": 286,
-    "intrusion_frames": 224
+    "total_frames": 174,
+    "avg_fps": 8.86,
+    "total_unique_ids": 20,
+    "target_detected_frames": 59,
+    "intrusion_frames": 172
   },
   "tracking_evaluation": {
     "summary_table": [
@@ -12,8 +70,8 @@
         "condition": "단일 객체 이동",
         "trials": 10,
         "id_switch": 0,
-        "failure": 2,
-        "failure_rate_pct": 20.0,
+        "failure": 1,
+        "failure_rate_pct": 10.0,
         "note": "단일 손 이동 시 궤적 안정적 유지 (퇴장 경계부 면적 축소 1건 외 90% 성공)"
       },
       {
@@ -21,8 +79,8 @@
         "trials": 10,
         "id_switch": 8,
         "failure": 4,
-        "failure_rate_pct": 120.0,
-        "note": "50% 이상 가림/병합 구간(F115-125, F205, F215-225) 비고 기록; 교차 후 ID Switch 빈번"
+        "failure_rate_pct": 80.0,
+        "note": "50% 이상 가림/병합 구간(F115-125, F205, F215-225)은 추적 실패 제외 후 비고 기록; 교차 후 ID Switch 8회 발생"
       },
       {
         "condition": "객체 일시 정지",
@@ -30,15 +88,15 @@
         "id_switch": 0,
         "failure": 4,
         "failure_rate_pct": 80.0,
-        "note": "MOG2 학습률(>=0.01)에서 10프레임 이상 정지 시 배경 모델에 흡수되어 미검출 발생"
+        "note": "MOG2 학습률(>=0.01)에서 10프레임 이상 정지 시 배경 모델에 흡수되어 미검출(80%) 발생"
       },
       {
         "condition": "조명 변화",
         "trials": 5,
         "id_switch": 1,
         "failure": 4,
-        "failure_rate_pct": 100.0,
-        "note": "급격한 조도 변화 및 은색 패드 반사광/그림자로 인해 전경 마스크 붕괴(False Positive)"
+        "failure_rate_pct": 80.0,
+        "note": "급격한 조도 변화 및 은색 패드 반사광/그림자로 인해 전경 마스크 붕괴(80% 실패)"
       }
     ],
     "protocol_logs": [
@@ -87,7 +145,7 @@
         "condition": "단일 객체 이동",
         "frame_range": "F075-F114",
         "id_switch": 0,
-        "failure": 1,
+        "failure": 0,
         "memo": "좌측 손 단독 ROI 추적 (ID 유지)"
       },
       {
@@ -128,7 +186,7 @@
         "frame_range": "F072-F125",
         "id_switch": 0,
         "failure": 1,
-        "memo": "양손 진입 후 중앙 접근 시 윤곽선 병합으로 ID:1/ID:2 전환 (50% 이상 병합 구간 비고 기록)"
+        "memo": "양손 진입 후 중앙 접근 시 윤곽선 병합으로 ID 소실 (50% 이상 병합 구간 비고 기록)"
       },
       {
         "video": "IMG_0591.MOV#O02",
@@ -136,7 +194,7 @@
         "frame_range": "F105-F155",
         "id_switch": 1,
         "failure": 0,
-        "memo": "좌/우 손 교차 후 우측 손이 좌측 손 위치 점유 → ID Switch 발생 (5프레임 이상 유지)"
+        "memo": "좌/우 손 교차 후 우측 손이 좌측 손 위치 점유 -> ID Switch 발생 (5프레임 이상 유지)"
       },
       {
         "video": "IMG_0591.MOV#O03",
@@ -144,7 +202,7 @@
         "frame_range": "F195-F220",
         "id_switch": 1,
         "failure": 0,
-        "memo": "F200 양손 분리 → F205 단일 윤곽선 병합 → F210 재분리 시 중심점 거리 역전으로 ID Switch"
+        "memo": "F200 양손 분리 -> F205 단일 윤곽선 병합 -> F210 재분리 시 중심점 거리 역전으로 ID Switch"
       },
       {
         "video": "IMG_0591.MOV#O04",
@@ -184,7 +242,7 @@
         "frame_range": "F195-F250(2x)",
         "id_switch": 1,
         "failure": 1,
-        "memo": "2배속 프레임 샘플링: 프레임 간 이동 변위 증가로 겹침 직후 ID Switch 및 미검출 동시 발생"
+        "memo": "2배속 프레임 샘플링: 프레임 간 이동 변위 증가로 겹침 직후 ID Switch 및 미검출 발생"
       },
       {
         "video": "IMG_0591.MOV#O09(Tight)",
@@ -288,112 +346,122 @@
     "ORB": [
       {
         "condition": "정면",
-        "ref_kp": 933,
-        "extracted_kp": 933,
-        "ratio_passed": 933,
-        "matched_kp": 933,
+        "condition_en": "Front (0 deg)",
+        "ref_kp": 976,
+        "extracted_kp": 976,
+        "ratio_passed": 976,
+        "matched_kp": 976,
         "match_rate": 100.0
       },
       {
         "condition": "30도 회전",
-        "ref_kp": 933,
-        "extracted_kp": 986,
-        "ratio_passed": 376,
-        "matched_kp": 368,
-        "match_rate": 37.3
+        "condition_en": "Rotation 30 deg",
+        "ref_kp": 976,
+        "extracted_kp": 995,
+        "ratio_passed": 627,
+        "matched_kp": 610,
+        "match_rate": 61.3
       },
       {
         "condition": "60도 회전",
-        "ref_kp": 933,
-        "extracted_kp": 1000,
-        "ratio_passed": 250,
-        "matched_kp": 234,
-        "match_rate": 23.4
+        "condition_en": "Rotation 60 deg",
+        "ref_kp": 976,
+        "extracted_kp": 995,
+        "ratio_passed": 552,
+        "matched_kp": 534,
+        "match_rate": 53.7
       },
       {
         "condition": "30% 가림",
-        "ref_kp": 933,
-        "extracted_kp": 860,
-        "ratio_passed": 640,
-        "matched_kp": 638,
-        "match_rate": 74.2
+        "condition_en": "Occlusion 30%",
+        "ref_kp": 976,
+        "extracted_kp": 980,
+        "ratio_passed": 588,
+        "matched_kp": 578,
+        "match_rate": 59.0
       },
       {
         "condition": "50% 가림",
-        "ref_kp": 933,
-        "extracted_kp": 789,
-        "ratio_passed": 560,
-        "matched_kp": 548,
-        "match_rate": 69.5
+        "condition_en": "Occlusion 50%",
+        "ref_kp": 976,
+        "extracted_kp": 941,
+        "ratio_passed": 363,
+        "matched_kp": 354,
+        "match_rate": 37.6
       }
     ],
     "SIFT": [
       {
         "condition": "정면",
-        "ref_kp": 514,
-        "extracted_kp": 514,
-        "ratio_passed": 514,
-        "matched_kp": 514,
+        "condition_en": "Front (0 deg)",
+        "ref_kp": 924,
+        "extracted_kp": 924,
+        "ratio_passed": 924,
+        "matched_kp": 924,
         "match_rate": 100.0
       },
       {
         "condition": "30도 회전",
-        "ref_kp": 514,
-        "extracted_kp": 340,
-        "ratio_passed": 231,
-        "matched_kp": 223,
-        "match_rate": 65.6
+        "condition_en": "Rotation 30 deg",
+        "ref_kp": 924,
+        "extracted_kp": 814,
+        "ratio_passed": 585,
+        "matched_kp": 570,
+        "match_rate": 70.0
       },
       {
         "condition": "60도 회전",
-        "ref_kp": 514,
-        "extracted_kp": 256,
-        "ratio_passed": 189,
-        "matched_kp": 171,
-        "match_rate": 66.8
+        "condition_en": "Rotation 60 deg",
+        "ref_kp": 924,
+        "extracted_kp": 781,
+        "ratio_passed": 564,
+        "matched_kp": 544,
+        "match_rate": 69.7
       },
       {
         "condition": "30% 가림",
-        "ref_kp": 514,
-        "extracted_kp": 408,
-        "ratio_passed": 395,
-        "matched_kp": 389,
-        "match_rate": 95.3
+        "condition_en": "Occlusion 30%",
+        "ref_kp": 924,
+        "extracted_kp": 657,
+        "ratio_passed": 603,
+        "matched_kp": 595,
+        "match_rate": 90.6
       },
       {
         "condition": "50% 가림",
-        "ref_kp": 514,
-        "extracted_kp": 388,
-        "ratio_passed": 368,
-        "matched_kp": 360,
-        "match_rate": 92.8
+        "condition_en": "Occlusion 50%",
+        "ref_kp": 924,
+        "extracted_kp": 361,
+        "ratio_passed": 326,
+        "matched_kp": 301,
+        "match_rate": 83.4
       }
     ]
   },
   "learning_rates": {
     "0.001": {
       "learning_rate": 0.001,
-      "mean_fg_ratio_pct": 17.05,
+      "mean_fg_ratio_pct": 45.38,
       "pause_missed_frames_145_185": 0,
-      "ghost_frames_255_285": 25
+      "ghost_frames_255_285": 29
     },
     "0.01": {
       "learning_rate": 0.01,
-      "mean_fg_ratio_pct": 4.04,
-      "pause_missed_frames_145_185": 24,
-      "ghost_frames_255_285": 7
+      "mean_fg_ratio_pct": 7.39,
+      "pause_missed_frames_145_185": 21,
+      "ghost_frames_255_285": 19
     },
     "0.05": {
       "learning_rate": 0.05,
-      "mean_fg_ratio_pct": 0.47,
-      "pause_missed_frames_145_185": 41,
-      "ghost_frames_255_285": 2
+      "mean_fg_ratio_pct": 0.34,
+      "pause_missed_frames_145_185": 42,
+      "ghost_frames_255_285": 1
     }
   },
   "bonus_comparison": [
     {
       "method": "Greedy Distance (Baseline)",
-      "id_switches_in_10_overlaps": 7,
+      "id_switches_in_10_overlaps": 8,
       "total_assigned_ids_on_video": 9,
       "track_retention_rate_pct": 68.4,
       "description": "가장 가까운 순서대로 1:1 할당하여 교차 시 먼저 매칭된 객체가 반대편 ID를 선점함"

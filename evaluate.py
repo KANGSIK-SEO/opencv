@@ -10,6 +10,7 @@ evaluate.py - /content/IMG_0591.MOV 대상 정량적 성능 측정, 기호 AI(Sy
 """
 
 import json
+import os
 from typing import Dict, List, Tuple
 
 import cv2
@@ -24,13 +25,23 @@ from symbolic_verifier import (
 )
 from tracker import Tracker, compute_iou, hungarian_algorithm_numpy
 
+BASE_DIR = "/content" if os.path.exists("/content/IMG_0591.MOV") else os.path.dirname(os.path.abspath(__file__))
+DEFAULT_VIDEO = os.path.join(BASE_DIR, "IMG_0591.MOV")
+DEFAULT_TARGET = os.path.join(BASE_DIR, "target.png")
+DEFAULT_OUTPUT = os.path.join(BASE_DIR, "output_tracked.mp4")
+FIG1_PATH = os.path.join(BASE_DIR, "fig1_tracking_keyframes.png")
+FIG2_PATH = os.path.join(BASE_DIR, "fig2_learning_rate_comparison.png")
+FIG3_PATH = os.path.join(BASE_DIR, "fig3_feature_matching_conditions.png")
+FIG4_PATH = os.path.join(BASE_DIR, "fig4_bonus_comparison.png")
+EVAL_JSON_PATH = os.path.join(BASE_DIR, "evaluation_results.json")
+
 
 @symbolic_contract(
     role="지정된 비디오 파일의 모든 프레임을 메모리에 로드하여 리스트로 반환하는 함수",
     post=lambda res: isinstance(res, list) and len(res) > 0,
 )
-def load_all_frames(video_path: str = "/content/IMG_0591.MOV") -> List[np.ndarray]:  # "비디오 파일의 전체 프레임을 순차적으로 읽어 리스트로 반환하는 함수"
-    """비디오 파일(/content/IMG_0591.MOV)의 모든 프레임을 읽어 리스트로 반환하는 함수"""
+def load_all_frames(video_path: str = DEFAULT_VIDEO) -> List[np.ndarray]:  # "비디오 파일의 전체 프레임을 순차적으로 읽어 리스트로 반환하는 함수"
+    """비디오 파일(IMG_0591.MOV)의 모든 프레임을 읽어 리스트로 반환하는 함수"""
     cap = cv2.VideoCapture(video_path)
     frames = []
     while True:
@@ -47,7 +58,7 @@ def load_all_frames(video_path: str = "/content/IMG_0591.MOV") -> List[np.ndarra
     post=lambda res: isinstance(res, dict) and "ORB" in res and "SIFT" in res and len(res["ORB"]) == 5,
 )
 def evaluate_feature_matching(
-    frame0: np.ndarray, target_path: str = "/content/target.png"
+    frame0: np.ndarray, target_path: str = DEFAULT_TARGET
 ) -> Dict[str, List[dict]]:  # "조건별(회전/가림) ORB 및 SIFT 특징점 추출 수, 매칭 수, 매칭률을 측정하고 시각화 이미지를 저장하는 함수"
     """5가지 기하/가림 변형 조건에서 ORB와 SIFT의 특징점 매칭 성능을 측정하는 함수"""
     target_img = cv2.imread(target_path, cv2.IMREAD_COLOR)
@@ -190,7 +201,7 @@ def evaluate_feature_matching(
     ax_bar.legend()
 
     plt.tight_layout()
-    plt.savefig("/content/fig3_feature_matching_conditions.png", dpi=160)
+    plt.savefig(FIG3_PATH, dpi=160)
     plt.close(fig)
 
     return results
@@ -230,14 +241,14 @@ def evaluate_learning_rates(frames: List[np.ndarray]) -> Dict[str, dict]:  # "�
             cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             boxes = [cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) > 15000]
 
-            if 145 <= idx <= 185 and len(boxes) == 0:
+            if 120 <= idx <= 165 and len(boxes) == 0:
                 pause_missed_frames += 1
-            if 255 <= idx <= 285 and len(boxes) > 0:
+            if 0 <= idx <= 30 and len(boxes) > 0:
                 ghost_frames_after_exit += 1
 
-            if idx == 175:
+            if idx == min(140, len(frames) - 1):
                 masks_at_pause[lr] = fg.copy()
-            if idx == 260:
+            if idx == min(60, len(frames) - 1):
                 masks_at_exit[lr] = fg.copy()
 
         lr_stats[str(lr)] = {
@@ -252,8 +263,8 @@ def evaluate_learning_rates(frames: List[np.ndarray]) -> Dict[str, dict]:  # "�
     for i, lr in enumerate(learning_rates):
         axes[0, i].imshow(masks_at_pause[lr], cmap="gray")
         axes[0, i].set_title(
-            f"Frame 175 (Slow/Pause Hand)\nlearningRate = {lr}\n"
-            f"Missed in F145-185: {lr_stats[str(lr)]['pause_missed_frames_145_185']}/41 frames",
+            f"Frame 140 (Pause & Crossed Posture)\nlearningRate = {lr}\n"
+            f"Missed in Pause: {lr_stats[str(lr)]['pause_missed_frames_145_185']} frames",
             fontsize=11,
             fontweight="bold",
         )
@@ -261,15 +272,15 @@ def evaluate_learning_rates(frames: List[np.ndarray]) -> Dict[str, dict]:  # "�
 
         axes[1, i].imshow(masks_at_exit[lr], cmap="gray")
         axes[1, i].set_title(
-            f"Frame 260 (After Hand Exit / Shadow)\nlearningRate = {lr}\n"
-            f"Ghost/Noise in F255-285: {lr_stats[str(lr)]['ghost_frames_255_285']}/31 frames",
+            f"Frame 60 (Active Motion & Shadow)\nlearningRate = {lr}\n"
+            f"Initial Ghost/Noise: {lr_stats[str(lr)]['ghost_frames_255_285']} frames",
             fontsize=11,
             fontweight="bold",
         )
         axes[1, i].axis("off")
 
     plt.tight_layout()
-    plt.savefig("/content/fig2_learning_rate_comparison.png", dpi=160)
+    plt.savefig(FIG2_PATH, dpi=160)
     plt.close(fig)
 
     return lr_stats
@@ -506,16 +517,16 @@ def evaluate_bonus_algorithms(frames: List[np.ndarray]) -> List[dict]:  # "보�
         ax1[1].text(b.get_x() + b.get_width() / 2, b.get_height() + 1.5, f"{b.get_height():.1f}%", ha="center", fontweight="bold")
 
     plt.tight_layout()
-    plt.savefig("/content/fig4_bonus_comparison.png", dpi=160)
+    plt.savefig(FIG4_PATH, dpi=160)
     plt.close(fig)
 
     return bonus_results
 
 
 def generate_keyframe_figure(
-    output_video_path: str = "/content/output_tracked.mp4",
+    output_video_path: str = DEFAULT_OUTPUT,
 ) -> None:  # "추적 결과 비디오에서 주요 6개 프레임을 추출하여 2x3 그리드 요약 이미지로 저장하는 함수"
-    """생성된 추적 결과 비디오(/content/output_tracked.mp4)에서 핵심 6개 프레임을 추출하여 시각화하는 함수"""
+    """생성된 추적 결과 비디오에서 핵심 6개 프레임을 추출하여 시각화하는 함수"""
     cap = cv2.VideoCapture(output_video_path)
     frames = []
     while True:
@@ -526,24 +537,26 @@ def generate_keyframe_figure(
     cap.release()
 
     key_indices = [
-        (10, "F010: Static Background & Target Re-ID (Apple Watch)"),
-        (65, "F065: Hand Entry & Intrusion Zone Alert"),
-        (85, "F085: Two Hands Tracked Separately (ID:1, ID:2)"),
-        (125, "F125: Hand Overlap & Trajectory Overlay"),
-        (210, "F210: Two Hands Split After Overlap (ID Switch Analysis)"),
-        (240, "F240: Continuous Trajectory & Target Found Overlay"),
+        (10, "F010: Static Feet & Target Re-ID (Shoe)"),
+        (45, "F045: Right Leg Lift & Motion Entry"),
+        (75, "F075: Leg Crossing & Trajectory Overlay"),
+        (105, "F105: Two Legs Overlap (Contour Merged)"),
+        (135, "F135: Crossed Posture Split & ID Switch Analysis"),
+        (165, "F165: Sustained Crossed Posture & BG Absorption"),
     ]
 
     fig, axes = plt.subplots(2, 3, figsize=(18, 10))
     axes = axes.ravel()
     for i, (f_idx, title) in enumerate(key_indices):
-        rgb = cv2.cvtColor(frames[min(f_idx, len(frames) - 1)], cv2.COLOR_BGR2RGB)
-        axes[i].imshow(rgb)
+        idx = min(f_idx, len(frames) - 1) if len(frames) > 0 else 0
+        if len(frames) > 0:
+            rgb = cv2.cvtColor(frames[idx], cv2.COLOR_BGR2RGB)
+            axes[i].imshow(rgb)
         axes[i].set_title(title, fontsize=11, fontweight="bold")
         axes[i].axis("off")
 
     plt.tight_layout()
-    plt.savefig("/content/fig1_tracking_keyframes.png", dpi=160)
+    plt.savefig(FIG1_PATH, dpi=160)
     plt.close(fig)
 
 
@@ -551,10 +564,10 @@ if __name__ == "__main__":
     print("[0/5] Running Symbolic AI (기호 AI) Static AST & Mathematical Invariant Verification ...")
     ast_verifier = SymbolicASTVerifier(
         [
-            "/content/symbolic_verifier.py",
-            "/content/tracker.py",
-            "/content/main.py",
-            "/content/evaluate.py",
+            os.path.join(BASE_DIR, "symbolic_verifier.py"),
+            os.path.join(BASE_DIR, "tracker.py"),
+            os.path.join(BASE_DIR, "main.py"),
+            os.path.join(BASE_DIR, "evaluate.py"),
         ]
     )
     ast_reports = ast_verifier.verify_all()
@@ -562,15 +575,15 @@ if __name__ == "__main__":
     hungarian_proof = SymbolicMathAndTrackerProver.prove_hungarian_optimality(hungarian_algorithm_numpy)
     tracker_proof = SymbolicMathAndTrackerProver.prove_tracker_state_invariants(Tracker)
 
-    video_path = "/content/IMG_0591.MOV"
-    target_path = ensure_default_target_image(video_path, "/content/target.png")
+    video_path = DEFAULT_VIDEO
+    target_path = ensure_default_target_image(video_path, DEFAULT_TARGET)
     frames = load_all_frames(video_path)
 
-    print("[1/5] Running main tracking pipeline & generating /content/output_tracked.mp4 ...")
+    print(f"[1/5] Running main tracking pipeline & generating {DEFAULT_OUTPUT} ...")
     app_summary = run_video_analysis(
         video_source=video_path,
         target_path=target_path,
-        output_path="/content/output_tracked.mp4",
+        output_path=DEFAULT_OUTPUT,
         bg_method="mog2",
         learning_rate=0.002,
         match_mode="greedy",
@@ -580,8 +593,8 @@ if __name__ == "__main__":
         headless=True,
     )
 
-    print("[2/5] Generating keyframe visualization (fig1_tracking_keyframes.png) ...")
-    generate_keyframe_figure("/content/output_tracked.mp4")
+    print(f"[2/5] Generating keyframe visualization ({FIG1_PATH}) ...")
+    generate_keyframe_figure(DEFAULT_OUTPUT)
 
     print("[3/5] Evaluating MOG2 learning rates (0.001, 0.01, 0.05) ...")
     lr_results = evaluate_learning_rates(frames)
@@ -621,7 +634,7 @@ if __name__ == "__main__":
         "bonus_comparison": bonus_eval,
     }
 
-    with open("/content/evaluation_results.json", "w", encoding="utf-8") as f:
+    with open(EVAL_JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(full_report_data, f, ensure_ascii=False, indent=2)
 
     print("All Symbolic AI checks & evaluations passed with 0 warnings/errors!")

@@ -24,6 +24,12 @@ import numpy as np
 from symbolic_verifier import symbolic_contract, SymbolicContractError
 from tracker import Tracker
 
+BASE_DIR = "/content" if os.path.exists("/content/IMG_0591.MOV") else os.path.dirname(os.path.abspath(__file__))
+DEFAULT_VIDEO = os.path.join(BASE_DIR, "IMG_0591.MOV")
+DEFAULT_TARGET = os.path.join(BASE_DIR, "target.png")
+DEFAULT_OUTPUT = os.path.join(BASE_DIR, "output_tracked.mp4")
+DEFAULT_LOG = os.path.join(BASE_DIR, "intrusion_log.txt")
+
 
 class FeatureTargetMatcher:  # "ORB 또는 SIFT 특징점 매칭을 통해 등록된 특정 물체(타겟 이미지)를 영상 내에서 재인식하는 클래스"
     """미리 등록된 타겟 물체 이미지를 로드하여 매 프레임 ORB/SIFT 특징점 매칭 및 호모그래피 검출을 수행하는 클래스"""
@@ -184,14 +190,14 @@ class IntrusionZoneMonitor:  # "[보너스 과제 2] 화면 내 사각형 침입
 
 
 @symbolic_contract(
-    role="타겟 이미지 파일이 없을 경우 원본 영상의 첫 프레임에서 특정 물체(Apple Watch) 영역을 크롭하여 생성하는 함수",
-    pre=lambda video_path, target_path="/content/target.png": isinstance(video_path, str) and len(video_path) > 0,
+    role="타겟 이미지 파일이 없을 경우 원본 영상의 첫 프레임에서 특정 물체(신발/오브젝트) 영역을 크롭하여 생성하는 함수",
+    pre=lambda video_path, target_path=DEFAULT_TARGET: isinstance(video_path, str) and len(video_path) > 0,
     post=lambda res: isinstance(res, str) and os.path.exists(res),
 )
 def ensure_default_target_image(
-    video_path: str, target_path: str = "/content/target.png"
-) -> str:  # "특징점 매칭에 사용할 타겟 물체 이미지(/content/target.png)를 준비하고 경로를 반환하는 함수"
-    """영상(/content/IMG_0591.MOV)의 첫 프레임에서 책상 좌측 Apple Watch 물체 영역을 타겟 이미지로 추출·저장하는 함수"""
+    video_path: str, target_path: str = DEFAULT_TARGET
+) -> str:  # "특징점 매칭에 사용할 타겟 물체 이미지(target.png)를 준비하고 경로를 반환하는 함수"
+    """영상(IMG_0591.MOV)의 첫 프레임에서 기준 신발 물체 영역을 타겟 이미지로 추출·저장하는 함수"""
     if os.path.exists(target_path):
         return target_path
 
@@ -201,10 +207,10 @@ def ensure_default_target_image(
     if not ret or frame0 is None:
         raise RuntimeError(f"비디오에서 첫 프레임을 읽을 수 없습니다: {video_path}")
 
-    # IMG_0591.MOV 좌측 하단 책상 위의 Apple Watch 물체 영역 추출
+    # IMG_0591.MOV 신발 물체 영역 추출 (y: 150~820, x: 100~460)
     h, w = frame0.shape[:2]
-    y1, y2 = int(h * 0.48), int(h * 0.88)
-    x1, x2 = int(w * 0.01), int(w * 0.39)
+    y1, y2 = int(h * 0.08), int(h * 0.43)
+    x1, x2 = int(w * 0.09), int(w * 0.43)
     crop = frame0[y1:y2, x1:x2]
     cv2.imwrite(target_path, crop)
     return target_path
@@ -266,9 +272,9 @@ def detect_moving_objects(
     post=lambda res: isinstance(res, dict) and res.get("total_frames", 0) > 0,
 )
 def run_video_analysis(
-    video_source: str = "/content/IMG_0591.MOV",
-    target_path: str = "/content/target.png",
-    output_path: Optional[str] = "/content/output_tracked.mp4",
+    video_source: str = DEFAULT_VIDEO,
+    target_path: str = DEFAULT_TARGET,
+    output_path: Optional[str] = DEFAULT_OUTPUT,
     bg_method: str = "mog2",
     learning_rate: float = 0.002,
     match_mode: str = "greedy",
@@ -310,9 +316,15 @@ def run_video_analysis(
         method=feature_method,
         min_match_count=18,
     )
+    # 세로 영상(1080x1920) 및 가로 영상에 모두 대응하는 침입 감지 구역 설정
+    default_zone = (
+        (int(width * 0.1), int(height * 0.2), int(width * 0.9), int(height * 0.85))
+        if width < height
+        else (930, 180, 1740, 840)
+    )
     intrusion_monitor = IntrusionZoneMonitor(
-        default_rect=(930, 180, 1740, 840),
-        log_path="/content/intrusion_log.txt",
+        default_rect=default_zone,
+        log_path=DEFAULT_LOG,
     )
 
     window_name = "OpenCV Real-Time Object Tracking & Re-ID"
@@ -542,19 +554,19 @@ def parse_args() -> argparse.Namespace:  # "커맨드라인 실행 인자(비디
     parser.add_argument(
         "--video",
         type=str,
-        default="/content/IMG_0591.MOV",
+        default=DEFAULT_VIDEO,
         help="입력 비디오 파일 경로 또는 '0'(웹캠)",
     )
     parser.add_argument(
         "--target",
         type=str,
-        default="/content/target.png",
+        default=DEFAULT_TARGET,
         help="재인식할 타겟 물체 이미지 경로",
     )
     parser.add_argument(
         "--output",
         type=str,
-        default="/content/output_tracked.mp4",
+        default=DEFAULT_OUTPUT,
         help="분석 결과 오버레이 비디오 저장 경로",
     )
     parser.add_argument(
