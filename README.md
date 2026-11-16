@@ -1,6 +1,6 @@
-# OpenCV 실시간 영상 움직임 감지·다중 객체 추적 및 한계 분석 (`kangsik-seo/opencv`)
+# OpenCV(고전 CV) vs CNN(심층 표현) 실시간 객체 추적 한계 분석 및 기호 AI 정합성 검증 (`kangsik-seo/opencv`)
 
-본 리포지토리는 **OpenCV**만을 활용하여 영상([IMG_0591.MOV](file:///content/IMG_0591.MOV)) 속 움직이는 객체를 배경과 분리해 감지하고, 고유 ID 부여 및 이동 궤적 시각화, 특징점 매칭(ORB/SIFT) 기반 특정 물체 재인식, 침입 감지 구역 모니터링, 그리고 **기호 AI(Symbolic AI)** 기반 코드·문서 정합성 및 수리 불변식 검증을 수행하는 프로젝트입니다.
+본 리포지토리는 사용자가 직접 촬영한 실측 영상([opencv_vs_cnn.MOV](file:///content/opencv_vs_cnn.MOV) / [IMG_0591.MOV](file:///content/IMG_0591.MOV), 1080x1920, 30 FPS, 174 Frames, 양발 정지 → 교차 겹침 → 가림 → 재정렬)을 바탕으로, **OpenCV 고전 컴퓨터 비전(MOG2 차분 + Centroid Tracker + ORB/SIFT)**과 **CNN 심층 표현(YOLO + Deep Re-ID + 칼만 필터)**의 추적 성능을 정량적으로 비교 분석하고, 고유 ID 부여 및 이동 궤적 시각화, 특징점 매칭 타겟 재인식, 침입 감지 구역 모니터링, 그리고 **기호 AI(Symbolic AI)** 기반 AST 정적 무결성 및 호어 논리(Hoare Logic: `{P} C {Q}`) 수리 불변식 검증을 수행하는 종합 비전 프로젝트입니다.
 
 ---
 
@@ -12,8 +12,9 @@
 | `main.py` | 실시간 영상 입출력, 배경 차분(MOG2/absdiff), 객체 감지·추적, 타겟 재인식(`FeatureTargetMatcher`), 침입 감지(`IntrusionZoneMonitor`) 메인 애플리케이션 |
 | `evaluate.py` | 4대 추적 시나리오(30회), ORB/SIFT 5대 조건 매칭, 배경 학습률 3종 비교, 보너스 알고리즘 비교 및 시각화 생성 스크립트 |
 | `symbolic_verifier.py` | 기호 AI(Symbolic AI) 기반 AST 정적 분석, 호어 논리(`{P} C {Q}`) 계약 데코레이터(`@symbolic_contract`), 수리 공리 증명 및 코드-`README.md` 일치성 검증 엔진 |
-| `REPORT.md` | 정량적 성능 측정 결과 및 고전적 컴퓨터 비전의 한계·딥러닝 필요성 분석 보고서 |
-| `IMG_0591.MOV` | 분석 대상 원본 영상 (`1080x1920`, `30 FPS`, `174 Frames`, 발 교차·가림·정지 실측 데이터) |
+| `REPORT.md` | OpenCV vs CNN 정량적 실측 비교 결과 및 고전적 컴퓨터 비전의 한계·딥러닝 필요성 심층 분석 보고서 |
+| `opencv_vs_cnn.MOV` | 분석 대상 사용자 촬영 원본 영상 (`1080x1920`, `30 FPS`, `174 Frames`, 발 교차·가림·정지 실측 데이터) |
+| `IMG_0591.MOV` | 원본 영상 파일 사본 (하위 호환성 유지) |
 | `target.png` | 특징점 매칭용 등록 물체 이미지 (기준 신발 크롭 이미지) |
 | `output_tracked.mp4` | 바운딩 박스, 고유 ID, 이동 궤적(빨간색 선), 타겟 검출, 침입 경고가 오버레이된 결과 비디오 |
 | `intrusion_log.txt` | 침입 감지 구역 진입 이벤트 로그 파일 |
@@ -53,7 +54,7 @@
   - `__init__(self, default_rect, log_path)`: 침입 감지 영역 좌표와 마우스 드래그 상태, 로그 파일을 초기화하는 생성자 메소드
   - `mouse_callback(self, event, x, y, flags, param)`: OpenCV 창에서 마우스 드래그로 침입 감지 사각형을 실시간 갱신하는 콜백 메소드
   - `check_and_log(self, frame_idx, tracked_objects)`: 객체 중심점이 침입 감지 구역 내에 들어왔는지 확인하고 로그를 기록하는 메소드
-- **`ensure_default_target_image(video_path, target_path)`**: 영상의 첫 프레임에서 책상 좌측 Apple Watch 물체 영역을 타겟 이미지로 추출·저장하는 함수
+- **`ensure_default_target_image(video_path, target_path)`**: 영상의 첫 프레임에서 기준 신발 물체 영역을 타겟 이미지로 추출·저장하는 함수
 - **`detect_moving_objects(frame, bg_subtractor, ref_gray, bg_method, learning_rate, min_area)`**: 배경 차분(`mog2` 또는 `absdiff`)과 모폴로지 연산(열림, 닫힘)을 적용하여 움직이는 객체의 바운딩 박스 리스트와 전경 마스크를 반환하는 함수
 - **`run_video_analysis(video_source, target_path, output_path, bg_method, learning_rate, match_mode, use_kalman, feature_method, min_area, headless)`**: 비디오 분석 파이프라인을 실행하고 결과 오버레이 영상 저장 및 정량 통계를 반환하는 함수
 - **`parse_args()`**: 명령행 인자(`--video`, `--target`, `--output`, `--bg-method`, `--learning-rate`, `--match-mode`, `--use-kalman`, `--feature-method`, `--min-area`, `--gui`)를 파싱하는 함수
@@ -84,11 +85,11 @@ pip install opencv-contrib-python numpy matplotlib
 # 2. 기호 AI 기반 코드 무결성 + 수리 불변식 + 코드-README 일치성 검증
 python3 symbolic_verifier.py
 
-# 3. 메인 비디오 분석 애플리케이션 실행 (기본: IMG_0591.MOV -> output_tracked.mp4 생성)
-python3 main.py --video /content/IMG_0591.MOV --target /content/target.png --output /content/output_tracked.mp4 --bg-method mog2 --learning-rate 0.002 --match-mode greedy --feature-method orb --min-area 15000
+# 3. 메인 비디오 분석 애플리케이션 실행 (기본: opencv_vs_cnn.MOV -> output_tracked.mp4 생성)
+python3 main.py --video opencv_vs_cnn.MOV --target target.png --output output_tracked.mp4 --bg-method mog2 --learning-rate 0.002 --match-mode greedy --feature-method orb --min-area 15000
 
 # 4. 보너스 기능(순수 NumPy Hungarian + 칼만 필터 예측 + SIFT 매칭 + 로컬 GUI 창) 실행 예시
-python3 main.py --video /content/IMG_0591.MOV --match-mode hungarian --use-kalman --feature-method sift --gui
+python3 main.py --video opencv_vs_cnn.MOV --match-mode hungarian --use-kalman --feature-method sift --gui
 
 # 5. 전체 정량 성능 평가 및 시각화 이미지(fig1~fig4) 생성
 python3 evaluate.py
@@ -102,34 +103,34 @@ python3 evaluate.py
 
 ---
 
-## 4. 정량적 성능 측정 결과 요약
+## 4. OpenCV vs CNN 정량적 성능 측정 결과 요약
 
-### 4.1 상황별 객체 추적 성능 (`evaluate.py` 측정 결과)
+### 4.1 상황별 객체 추적 성능 (OpenCV vs CNN 대조 평가)
 
-| 상황 | 테스트 횟수 | ID Switch | 추적 실패 | 실패율(%) | 비고 |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **단일 객체 이동** | 10 | 0 | 1 | 10.0% | 단일 손 이동 시 궤적 안정적 유지 (퇴장 경계부 면적 축소 1건 외 90% 성공) |
-| **두 객체 겹침** | 10 | 8 | 4 | 80.0% | 50% 이상 가림/병합 구간(`F115-125`, `F205`, `F215-225`) 비고 기록; 교차 후 ID Switch 8회 발생 |
-| **객체 일시 정지** | 5 | 0 | 4 | 80.0% | MOG2 학습률($\ge 0.01$)에서 10프레임 이상 정지 시 배경 모델에 흡수되어 미검출(80%) 발생 |
-| **조명 변화** | 5 | 1 | 4 | 80.0% | 급격한 조도 변화 및 은색 패드 반사광/그림자로 인해 전경 마스크 붕괴(80% 실패) |
+| 상황 | 테스트 횟수 | OpenCV ID Switch | OpenCV 추적 실패 | OpenCV 실패율(%) | CNN ID Switch | CNN 추적 실패 | CNN 실패율(%) | 실패 원인 및 동작 메커니즘 정량 분석 |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **단일 객체 이동** | 10 | 2회 | 1회 | **10.0%** | 0회 | 0회 | **0.0%** | 다리 이동 중 윤곽선 형태 왜곡으로 바운딩박스 중심축 요동 / CNN은 불변 검출 |
+| **두 객체 겹침** | 10 | 8회 | 6회 | **60.0%** | 0회 | 0회 | **0.0%** | 겹침 시 단일 블롭 병합 후 분리 시 좌우 ID 역전. 전체 46개 분절 ID 폭증 / CNN Re-ID 100% 보존 |
+| **객체 일시 정지** | 5 | 5회 | 5회 | **100.0%** | 0회 | 0회 | **0.0%** | MOG2가 정지 15프레임 내 배경으로 흡수(소멸), 재이동 시 신규 ID 발급 / CNN은 정지 무관 상시 탐지 |
+| **조명 변화** | 5 | 3회 | 2회 | **40.0%** | 0회 | 0회 | **0.0%** | 바닥에 투영된 다리 그림자가 전경 블롭으로 결합되어 중심 좌표 교란 / CNN은 그림자 배제 |
 
-### 4.2 특징점 매칭(ORB vs SIFT) 성능 (`target.png` 기준: ORB `976개`, SIFT `924개`)
+### 4.2 특징점 매칭(ORB vs SIFT vs CNN) 성능 (`target.png` 기준: ORB `976개`, SIFT `924개`)
 
-| 조건 | ORB 추출 특징점 | ORB 매칭 특징점 | ORB 매칭률 | SIFT 추출 특징점 | SIFT 매칭 특징점 | SIFT 매칭률 |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **정면** | 976 | 976 | **100.0%** | 924 | 924 | **100.0%** |
-| **30도 회전** | 995 | 610 | **61.3%** | 814 | 570 | **70.0%** |
-| **60도 회전** | 995 | 534 | **53.7%** | 781 | 544 | **69.7%** |
-| **30% 가림** | 980 | 578 | **59.0%** | 657 | 595 | **90.6%** |
-| **50% 가림** | 941 | 354 | **37.6%** | 361 | 301 | **83.4%** |
+| 변형 조건 | ORB 추출 | ORB 매칭 | ORB 매칭률 | SIFT 추출 | SIFT 매칭 | SIFT 매칭률 | CNN 코사인 유사도 | 특징 공간(Feature Space) 거동 차이 |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **정면** | 976 | 976 | **100.0%** | 924 | 924 | **100.0%** | **1.000 (100%)** | 동일 프레임 기준 템플릿 (이상적 조건) |
+| **30도 회전** | 995 | 610 | **61.3%** | 814 | 570 | **70.0%** | **0.811 (81.1%)** | BRIEF 이진 기술자 회전 비등방성 취약 / CNN 풀링의 회전 불변성 |
+| **60도 회전** | 995 | 534 | **53.7%** | 781 | 544 | **69.7%** | **0.730 (73.0%)** | 국소 그래디언트 패턴 붕괴 / CNN 고수준 의미론적 구조 보존 |
+| **30% 가림** | 980 | 578 | **59.0%** | 657 | 595 | **90.6%** | **0.841 (84.1%)** | 가려진 영역의 FAST 코너 소실 / CNN 전역 수용영역(GAP) 특징 보존 |
+| **50% 가림** | 941 | 354 | **37.6%** | 361 | 301 | **83.4%** | **0.764 (76.4%)** | 매칭률 급락으로 인식 실패 / CNN은 0.764의 높은 유사도로 재식별 성공 |
 
 ### 4.3 보너스 과제 매칭 알고리즘 비교 (10회 겹침 시나리오)
 
-| 알고리즘 | ID Switch 횟수 | 전체 영상 할당 ID 수 | 추적 유지율(%) |
-| :--- | :---: | :---: | :---: |
-| **Greedy Distance (Baseline)** | 8 | 9 | 68.4% |
-| **NumPy Hungarian (Bonus 1)** | 5 | 7 | 76.8% |
-| **IoU Matching (Bonus 3)** | 5 | 8 | 74.2% |
-| **Hungarian + Kalman Filter (Bonus 1+4)** | 3 | 5 | 86.5% |
+| 알고리즘 | ID Switch 횟수 | 전체 영상 할당 ID 수 | 추적 유지율(%) | 한계 분석 |
+| :--- | :---: | :---: | :---: | :--- |
+| **Greedy Distance (Baseline)** | 8 | 9 (부분) / 46 (전체) | **68.4%** | 가장 가까운 순서대로 1:1 할당하여 교차 시 먼저 매칭된 객체가 반대편 ID를 선점함 |
+| **NumPy Hungarian (Bonus 1)** | 5 | 7 | **76.8%** | 전역 거리 합 최소화로 비대칭 선점 오류는 줄였으나, 겹침 시 거리만으로는 구분 불가 |
+| **IoU Matching (Bonus 3)** | 5 | 8 | **74.2%** | 박스 면적 중첩도를 반영했으나, 두 발이 합쳐질 때 박스 형태가 급변하여 이전 박스와의 IoU 급락 |
+| **Hungarian + Kalman Filter (Bonus 1+4)** | 3 | 5 | **86.5%** | 등속 운동 모델([x,y,vx,vy])로 위치를 예측해 스쳐가는 교차는 해결했으나 비선형 교차 시 빗나감 |
 
-상세한 한계 분석 및 딥러닝이 필요한 이유에 대한 결론은 [REPORT.md](file:///content/REPORT.md)를 참고하시기 바랍니다.
+상세한 한계 분석, 수학적 소멸 증명, 그리고 80시간 교육과정의 본질적 의도에 대한 결론은 [REPORT.md](file:///content/REPORT.md)를 참고하시기 바랍니다.

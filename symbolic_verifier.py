@@ -318,6 +318,7 @@ class SymbolicReadmeCodeConsistencyVerifier:  # "소스 코드(AST)와 README.md
             "symbolic_verifier.py",
             "README.md",
             "REPORT.md",
+            "opencv_vs_cnn.MOV",
             "IMG_0591.MOV",
             "target.png",
             "output_tracked.mp4",

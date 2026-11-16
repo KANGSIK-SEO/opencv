@@ -1,7 +1,7 @@
 """
-main.py - OpenCV 기반 실시간 영상 움직임 감지, 다중 객체 추적 및 특정 물체 재인식 애플리케이션 (+ 기호 AI 계약 검증 적용)
+main.py - OpenCV(고전 CV) vs CNN(심층 표현) 실시간 영상 움직임 감지, 다중 객체 추적 및 특정 물체 재인식 애플리케이션 (+ 기호 AI 계약 검증 적용)
 
-분석 대상 영상: /content/IMG_0591.MOV (또는 웹캠 스트림)
+분석 대상 영상: opencv_vs_cnn.MOV (또는 IMG_0591.MOV, 174 Frames, 양발 정지 → 교차 겹침 → 가림 → 재정렬 실측 데이터)
 구현 기능:
 1. 영상 입출력 및 제어: cv2.VideoCapture, 실시간 FPS 계산/표시, 키보드 제어 (q: 종료, s: 스냅샷, p: 일시정지)
 2. 배경 차분: MOG2 (createBackgroundSubtractorMOG2) 및 absdiff 차영상 지원, 학습률(learning rate) 설정, 모폴로지(열림/닫힘)
@@ -24,8 +24,12 @@ import numpy as np
 from symbolic_verifier import symbolic_contract, SymbolicContractError
 from tracker import Tracker
 
-BASE_DIR = "/content" if os.path.exists("/content/IMG_0591.MOV") else os.path.dirname(os.path.abspath(__file__))
-DEFAULT_VIDEO = os.path.join(BASE_DIR, "IMG_0591.MOV")
+BASE_DIR = "/content" if os.path.exists("/content/opencv_vs_cnn.MOV") or os.path.exists("/content/IMG_0591.MOV") else os.path.dirname(os.path.abspath(__file__))
+DEFAULT_VIDEO = (
+    os.path.join(BASE_DIR, "opencv_vs_cnn.MOV")
+    if os.path.exists(os.path.join(BASE_DIR, "opencv_vs_cnn.MOV"))
+    else os.path.join(BASE_DIR, "IMG_0591.MOV")
+)
 DEFAULT_TARGET = os.path.join(BASE_DIR, "target.png")
 DEFAULT_OUTPUT = os.path.join(BASE_DIR, "output_tracked.mp4")
 DEFAULT_LOG = os.path.join(BASE_DIR, "intrusion_log.txt")
@@ -197,7 +201,7 @@ class IntrusionZoneMonitor:  # "[보너스 과제 2] 화면 내 사각형 침입
 def ensure_default_target_image(
     video_path: str, target_path: str = DEFAULT_TARGET
 ) -> str:  # "특징점 매칭에 사용할 타겟 물체 이미지(target.png)를 준비하고 경로를 반환하는 함수"
-    """영상(IMG_0591.MOV)의 첫 프레임에서 기준 신발 물체 영역을 타겟 이미지로 추출·저장하는 함수"""
+    """영상(opencv_vs_cnn.MOV / IMG_0591.MOV)의 첫 프레임에서 기준 신발 물체 영역을 타겟 이미지로 추출·저장하는 함수"""
     if os.path.exists(target_path):
         return target_path
 
@@ -207,7 +211,7 @@ def ensure_default_target_image(
     if not ret or frame0 is None:
         raise RuntimeError(f"비디오에서 첫 프레임을 읽을 수 없습니다: {video_path}")
 
-    # IMG_0591.MOV 신발 물체 영역 추출 (y: 150~820, x: 100~460)
+    # opencv_vs_cnn.MOV 신발 물체 영역 추출 (y: 150~820, x: 100~460)
     h, w = frame0.shape[:2]
     y1, y2 = int(h * 0.08), int(h * 0.43)
     x1, x2 = int(w * 0.09), int(w * 0.43)
