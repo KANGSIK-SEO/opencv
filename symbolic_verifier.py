@@ -328,6 +328,9 @@ class SymbolicReadmeCodeConsistencyVerifier:  # "소스 코드(AST)와 README.md
             "fig2_learning_rate_comparison.png",
             "fig3_feature_matching_conditions.png",
             "fig4_bonus_comparison.png",
+            "pink_noise_evaluator.py",
+            "PEER_REVIEW_GUIDE.md",
+            "fig5_peer_review_pink_noise.png",
         ]
         missing_files = [
             fname
@@ -372,6 +375,7 @@ if __name__ == "__main__":
         os.path.join(BASE_DIR, "tracker.py"),
         os.path.join(BASE_DIR, "main.py"),
         os.path.join(BASE_DIR, "evaluate.py"),
+        os.path.join(BASE_DIR, "pink_noise_evaluator.py"),
     ]
     ast_verifier = SymbolicASTVerifier(target_py_files)
     ast_reports = ast_verifier.verify_all()

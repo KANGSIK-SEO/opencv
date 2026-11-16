@@ -23,6 +23,9 @@
 | `fig2_learning_rate_comparison.png` | MOG2 배경 학습률(`0.001`, `0.01`, `0.05`)에 따른 정지 객체 흡수 및 잔상 비교 |
 | `fig3_feature_matching_conditions.png` | 정면, 30°/60° 회전, 30%/50% 가림 조건별 ORB vs SIFT 특징점 매칭 비교 |
 | `fig4_bonus_comparison.png` | Greedy vs NumPy Hungarian vs IoU vs Kalman Filter 성능 비교 차트 |
+| `pink_noise_evaluator.py` | *Science Advances* (2026) 기반 동료평가(Peer Review) 의미 유사도 궤적 및 핑크 노이즈(DFA $\alpha$) 정량 평가기 |
+| `PEER_REVIEW_GUIDE.md` | 핑크 노이즈(Goldilocks Zone) 동료평가 3단계 프레임워크 및 작성 가이드라인 |
+| `fig5_peer_review_pink_noise.png` | 동료평가 턴별 의미 유사도 시계열 궤적 및 DFA 스케일링 로그 회귀 분석 시각화 차트 |
 
 ---
 
@@ -72,7 +75,20 @@
 - **`symbolic_contract(role, pre, post, pre_msg, post_msg)`**: 함수/메소드의 호어 논리 삼중항 `{P} f {Q}`을 검증하고 역할을 명시하는 데코레이터
 - **`class SymbolicASTVerifier`**: AST 기반 코드 구문 무결성, 독스트링 존재 여부, 0 나눗셈 안전성 검증 클래스 (`__init__`, `verify_file`, `verify_all`)
 - **`class SymbolicMathAndTrackerProver`**: IoU 공리(`prove_iou_axioms`), Hungarian 전역 최적성(`prove_hungarian_optimality`), Tracker 상태 불변식(`prove_tracker_state_invariants`) 자동 증명 클래스
-- **`class SymbolicReadmeCodeConsistencyVerifier`**: 소스 코드(`tracker.py`, `main.py`, `evaluate.py`, `symbolic_verifier.py`)의 모든 클래스·함수·CLI 옵션·정량 지표가 `README.md`와 100% 일치하는지 기호적으로 검증하는 클래스 (`__init__`, `verify_consistency`)
+- **`class SymbolicReadmeCodeConsistencyVerifier`**: 소스 코드(`tracker.py`, `main.py`, `evaluate.py`, `symbolic_verifier.py`, `pink_noise_evaluator.py`)의 모든 클래스·함수·CLI 옵션·정량 지표가 `README.md`와 100% 일치하는지 기호적으로 검증하는 클래스 (`__init__`, `verify_consistency`)
+
+### 2.5 `pink_noise_evaluator.py`
+- **`class PinkNoisePeerReviewEvaluator`**: 동료평가 대화 텍스트의 의미 유사도 궤적에서 핑크 노이즈($1/f$) 스케일링 지수를 분석하는 평가기 클래스
+  - `__init__(self, min_scale, max_scale)`: 평가기 초기화 및 DFA 윈도우 스케일 범위 설정 생성자 메소드
+  - `tokenize(text)`: 한국어 및 영문 텍스트에서 단어 및 형태소 토큰을 추출하는 정적 메소드
+  - `compute_bow_vectors(self, turns)`: 턴별 텍스트 목록으로부터 단어 문서 행렬(Bag of Words / TF-IDF)을 생성하는 메소드
+  - `compute_similarity_trajectory(self, turns)`: 연속된 대화 턴 간의 코사인 유사도 시계열 궤적 $S(t)$를 계산하는 메소드
+  - `detrended_fluctuation_analysis(self, signal)`: 신호에 대해 추세제거 변동 분석(DFA)을 수행하여 스케일링 지수 $\alpha$를 계산하는 메소드
+  - `compute_psd_spectral_exponent(self, signal)`: 파워 스펙트럼 밀도(PSD) 회귀를 통해 스펙트럼 지수 $\beta$ 및 $\alpha$를 도출하는 메소드
+  - `classify_noise_regime(self, alpha)`: DFA 스케일링 $\alpha$ 수치를 기반으로 노이즈 색상 및 대화 특성을 판정하는 메소드
+  - `evaluate_dialogue(self, turns)`: 대화 목록을 입력받아 시계열 유사도 및 핑크 노이즈 종합 결과를 생성하는 메소드
+  - `plot_and_save_report(self, eval_result, output_image_path)`: 평가 결과를 2분할(유사도 궤적 + DFA 스케일링 로그 플롯) 시각화 이미지로 저장하는 메소드
+- **`get_standard_pink_noise_peer_review_sample()`**: 고전 OpenCV vs CNN 추적 프로젝트에 대한 표준 핑크 노이즈(골디락스 존) 동료평가 14턴 대화 샘플을 반환하는 함수
 
 ---
 
@@ -93,6 +109,9 @@ python3 main.py --video opencv_vs_cnn.MOV --match-mode hungarian --use-kalman --
 
 # 5. 전체 정량 성능 평가 및 시각화 이미지(fig1~fig4) 생성
 python3 evaluate.py
+
+# 6. Science Advances (2026) 동료평가 핑크 노이즈(1/f) 정량 평가 및 시각화 차트(fig5) 생성
+python3 pink_noise_evaluator.py
 ```
 
 - **키보드 제어 (`--gui` 모드 실행 시)**:
@@ -134,3 +153,14 @@ python3 evaluate.py
 | **Hungarian + Kalman Filter (Bonus 1+4)** | 3 | 5 | **86.5%** | 등속 운동 모델([x,y,vx,vy])로 위치를 예측해 스쳐가는 교차는 해결했으나 비선형 교차 시 빗나감 |
 
 상세한 한계 분석, 수학적 소멸 증명, 그리고 80시간 교육과정의 본질적 의도에 대한 결론은 [REPORT.md](file:///content/REPORT.md)를 참고하시기 바랍니다.
+
+---
+
+## 5. 🌸 핑크 노이즈(Pink Noise, $1/f$) 동료평가 시스템
+
+본 저장소는 *Science Advances* (2026, Kathryn C. O’Nell et al., *"Pink noise in dyads’ semantic similarity trajectories predicts conversation enjoyment"*)의 연구를 바탕으로, 단순 칭찬(적색 노이즈, $\alpha \approx 1.5$)이나 무의미한 비난(백색 노이즈, $\alpha \approx 0.5$)을 탈피하여, 공감(정렬)과 예리한 반론(발산)이 황금비율을 이루는 **핑크 노이즈($\alpha \approx 0.62 \sim 1.0$, 골디락스 존)** 동료평가를 지원합니다.
+
+* **동료평가 가이드 및 4대 심층 토론 아젠다**: [PEER_REVIEW_GUIDE.md](file:///content/PEER_REVIEW_GUIDE.md)
+* **동료평가 핑크 노이즈 지수 측정 도구**: `python3 pink_noise_evaluator.py` 실행 시 턴별 의미 유사도 궤적 및 DFA 스케일링 지수($\alpha$) 분석 차트(`fig5_peer_review_pink_noise.png`) 생성
+* **GitHub PR/이슈 템플릿**: `.github/PULL_REQUEST_TEMPLATE.md` 및 `.github/ISSUE_TEMPLATE/peer_review.md` 완비
+
